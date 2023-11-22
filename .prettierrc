@@ -1,0 +1,27 @@
+{
+  "printWidth": 100,
+  "semi": false,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "tabWidth": 2,
+  "jsxSingleQuote": true,
+  "jsxBracketSameLine": false,
+  "arrowParens": "avoid",
+  "bracketSpacing": true,
+  "quoteProps": "consistent",
+  "overrides": [
+    {
+      "files": "*.{ts,tsx,js,jsx}",
+      "options": {
+        "tabWidth": 4
+      }
+    },
+    {
+      "files": "lint-staged.config.js",
+      "options": {
+        "tabWidth": 4,
+        "printWidth": 50
+      }
+    }
+  ]
+}

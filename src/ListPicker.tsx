@@ -1,39 +1,30 @@
-import { ListBox } from "primereact/listbox";
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { ListBox } from 'primereact/listbox'
+import { useUserList } from './queries/user.query'
+import { ProgressSpinner } from 'primereact/progressspinner'
 
 export interface IUser {
-  id: number;
-  name: string;
+    id: number
+    name: string
 }
 
 interface IListPicker {
-  onConfirm: (user: IUser) => void;
-  selectedUser: IUser;
+    onConfirm: (user: IUser) => void
+    selectedUser: IUser
 }
 const ListPicker = (props: IListPicker) => {
-  useEffect(() => {
-    (async () => {
-      const response = await axios.get(
-        "https://nvite-api.azurewebsites.net/list"
-      );
-      if (response.status === 200) {
-        setUserList(response.data);
-      }
-    })();
-  }, []);
+    const userList = useUserList()
 
-  const [userList, setUserList] = useState<IUser[]>([]);
+    return userList.isLoading ? (
+        <ProgressSpinner />
+    ) : (
+        <ListBox
+            value={props.selectedUser}
+            options={userList.data}
+            onChange={e => props.onConfirm(e.value)}
+            optionLabel='name'
+            style={{ width: '15rem' }}
+        />
+    )
+}
 
-  return (
-    <ListBox
-      value={props.selectedUser}
-      options={userList}
-      onChange={(e) => props.onConfirm(e.value)}
-      optionLabel="name"
-      style={{ width: "15rem" }}
-    />
-  );
-};
-
-export default ListPicker;
+export default ListPicker

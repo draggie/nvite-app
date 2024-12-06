@@ -8,14 +8,15 @@ import 'primereact/resources/primereact.min.css' //core css
 import 'primeicons/primeicons.css' //icons
 import 'primeflex/primeflex.css'
 import { MagicProvider } from './context/magic.context'
+import { createRoot } from 'react-dom/client'
 
-ReactDOM.render(
+const root = createRoot(document.getElementById('root')!)
+root.render(
     <React.StrictMode>
         <MagicProvider>
             <App />
         </MagicProvider>
     </React.StrictMode>,
-    document.getElementById('root'),
 )
 
 // If you want to start measuring performance in your app, pass a function

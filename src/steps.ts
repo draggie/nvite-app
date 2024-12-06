@@ -7,6 +7,9 @@ import { AreYouSureSureStep } from './steps/AreYouSureSureStep'
 import { RunningButtonStep } from './steps/RunningButtonStep'
 import { SantaStep } from './steps/SantaStep'
 import { FinalStep } from './steps/FinalStep'
+import { LoadingForeverStep } from './steps/LoadingForeverStep'
+import { ClickFrenzyStep } from './steps/ClickFrenzyStep'
+import { SnowballFightStep } from './steps/SnowballFightStep'
 
 export enum Steps {
     PICK_USER,
@@ -15,6 +18,9 @@ export enum Steps {
     ARE_YOU_SURE_SURE,
     RUNNING_BUTTON,
     SANTA_STEP,
+    LOADING,
+    Frenzy,
+    Snowball,
     FINAL_STEP,
 }
 
@@ -51,6 +57,18 @@ export const steps: IStepComponent[] = [
     {
         order: Steps.SANTA_STEP,
         component: SantaStep,
+    },
+    {
+        order: Steps.LOADING,
+        component: LoadingForeverStep,
+    },
+    {
+        order: Steps.Frenzy,
+        component: ClickFrenzyStep,
+    },
+    {
+        order: Steps.Snowball,
+        component: SnowballFightStep,
     },
     {
         order: Steps.FINAL_STEP,

@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node back/server.js",
     "build": "npm run build:frontend && npm run build:backend",
-    "build:frontend": "react-scripts build",
+    "build:frontend": "npx react-scripts build",
     "build:backend": "node scripts/copy-build.js",
     "install:all": "npm install && cd back && npm install && cd ..",
     "dev": "react-scripts start",

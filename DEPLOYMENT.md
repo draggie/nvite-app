@@ -13,7 +13,7 @@ This guide will help you deploy the nvite-app to Render.
 
 1. **Push your code to GitHub** (if not already done)
    ```bash
-   git add .
+  xd
    git commit -m "Prepare for Render deployment"
    git push origin main
    ```

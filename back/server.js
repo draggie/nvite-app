@@ -1,68 +1,37 @@
 // @ts-check
-var util = require("./util");
 const express = require("express");
 const http = require("http");
-const url = require("url");
+const path = require("path");
 var cookieParser = require("cookie-parser");
-const request = require("request");
 var cors = require("cors");
-const removed = [];
 var fs = require("fs");
 const { values } = require("lodash");
 const { randomIntFromInterval } = require("./util");
 
 async function main() {
-  // Azure App Service will set process.env.port for you, but we use 3000 in development.
+  // Render will set process.env.PORT for you, but we use 3001 in development.
   const PORT = process.env.PORT || 3001;
   // Create the express routes
   let app = express();
-  app.use(express.static("public"));
   app.use(cookieParser());
   app.use(cors());
+  app.use(express.json());
 
-  app.get("/", async (req, res) => {
-    if (req.query && req.query.loginsession) {
-      res.cookie("loginsession", req.query.loginsession, {
-        maxAge: 3600000,
-        httpOnly: true,
-      });
-      res.redirect(url.parse(req.url).pathname);
-    } else {
-      let indexContent = await util.loadEnvironmentVariables({
-        host: process.env["HTTP_HOST"],
-      });
-      res.end(indexContent);
-    }
-  });
+  // Serve static files from public directory (for API JSON files)
+  app.use("/api", express.static("public"));
 
-  app.get("/api/metadata", async (req, res) => {
-    if (req.cookies.loginsession) {
-      let tryappserviceendpoint =
-        (process.env["APPSETTING_TRYAPPSERVICE_URL"] ||
-          "https://tryappservice.azure.com") + "/api/vscoderesource";
-      const options = {
-        url: tryappserviceendpoint,
-        headers: {
-          cookie: "loginsession=" + req.cookies.loginsession,
-        },
-      };
+  // Serve React app static files from build directory
+  app.use(express.static("public/build"));
 
-      const x = request(options);
-      x.pipe(res);
-    } else {
-      res.end(404);
-    }
-  });
-
+  // API routes
   app.get("/list", (_req, res, _next) => {
     fs.readFile(__dirname + "/public/list.json", (err, data) => {
       if (err) {
         res.writeHead(404);
         res.end(JSON.stringify(err));
-
         return;
       }
-      res.writeHead(200);
+      res.writeHead(200, { "Content-Type": "application/json" });
       res.end(data);
     });
   });
@@ -126,6 +95,17 @@ async function main() {
         res.end();
       }
     }
+  });
+
+  // Handle React Router - serve index.html for all non-API routes
+  app.get("*", (req, res) => {
+    // Don't serve index.html for API routes
+    if (req.path.startsWith("/api/") || req.path.startsWith("/list") || req.path.startsWith("/picklist") || req.path.startsWith("/lottery") || req.path.startsWith("/test")) {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
+    // Serve React app for all other routes
+    res.sendFile(path.join(__dirname, "public/build/index.html"));
   });
 
   // Create the HTTP server.

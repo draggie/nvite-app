@@ -1,7 +1,18 @@
 {
-  "name": "gift-picker",
+  "name": "nvite-app",
   "version": "0.1.0",
   "private": true,
+  "main": "back/server.js",
+  "scripts": {
+    "start": "node back/server.js",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "react-scripts build",
+    "build:backend": "node scripts/copy-build.js",
+    "install:all": "npm install && cd back && npm install && cd ..",
+    "dev": "react-scripts start",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
   "dependencies": {
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
@@ -11,7 +22,11 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "axios": "^0.29.0",
+    "cookie-parser": "^1.4.3",
+    "cors": "^2.8.5",
+    "express": "^4.16.3",
     "formik": "^2.2.9",
+    "lodash": "^4.17.21",
     "primeflex": "3.3.1",
     "primeicons": "^6.0.1",
     "primereact": "^10.1.0",
@@ -20,15 +35,10 @@
     "react-query": "^3.39.3",
     "react-scripts": "^5.0.1",
     "react-transition-group": "^4.4.2",
+    "request": "^2.88.0",
     "typescript": "^5.7.2",
     "web-vitals": "^1.0.1",
     "yup": "^0.32.11"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [
@@ -50,5 +60,9 @@
   },
   "devDependencies": {
     "prettier": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   }
 }

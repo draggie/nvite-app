@@ -5,7 +5,7 @@
   "main": "back/server.js",
   "scripts": {
     "start": "node back/server.js",
-    "build": "npm run build:frontend && npm run build:backend",
+    "build": "yarn build:frontend && yarn build:backend",
     "build:frontend": "react-scripts build",
     "build:backend": "node scripts/copy-build.js",
     "install:all": "npm install && cd back && npm install && cd ..",

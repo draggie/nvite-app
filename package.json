@@ -3,13 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "main": "back/server.js",
+  "proxy": "http://localhost:3001",
   "scripts": {
     "start": "node back/server.js",
     "build": "yarn build:frontend && yarn build:backend",
     "build:frontend": "react-scripts build",
     "build:backend": "node scripts/copy-build.js",
-    "install:all": "npm install && cd back && npm install && cd ..",
+    "install:all": "yarn install",
     "dev": "react-scripts start",
+    "dev:server": "node back/server.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

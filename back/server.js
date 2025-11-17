@@ -18,10 +18,11 @@ async function main() {
   app.use(express.json());
 
   // Serve static files from public directory (for API JSON files)
-  app.use("/api", express.static("public"));
+  app.use("/api", express.static(path.join(__dirname, "public")));
 
   // Serve React app static files from build directory
-  app.use(express.static("public/build"));
+  // This must come before the catch-all route
+  app.use(express.static(path.join(__dirname, "public/build")));
 
   // API routes
   app.get("/list", (_req, res, _next) => {
@@ -98,14 +99,35 @@ async function main() {
   });
 
   // Handle React Router - serve index.html for all non-API routes
+  // This must be last, after static file serving
+  // Express static middleware will handle static files before this route
   app.get("*", (req, res) => {
     // Don't serve index.html for API routes
-    if (req.path.startsWith("/api/") || req.path.startsWith("/list") || req.path.startsWith("/picklist") || req.path.startsWith("/lottery") || req.path.startsWith("/test")) {
+    if (
+      req.path.startsWith("/api/") ||
+      req.path.startsWith("/list") ||
+      req.path.startsWith("/picklist") ||
+      req.path.startsWith("/lottery") ||
+      req.path.startsWith("/test")
+    ) {
       res.status(404).json({ error: "Not found" });
       return;
     }
-    // Serve React app for all other routes
-    res.sendFile(path.join(__dirname, "public/build/index.html"));
+    
+    // Don't serve index.html for requests that look like static files
+    // (Express static middleware should have handled these, but just in case)
+    if (req.path.match(/\.(js|css|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|map)$/i)) {
+      res.status(404).send("File not found");
+      return;
+    }
+    
+    // Serve React app for all other routes (SPA routing)
+    const indexPath = path.join(__dirname, "public/build/index.html");
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      res.status(500).send("Build files not found. Please run 'yarn build' first.");
+    }
   });
 
   // Create the HTTP server.

@@ -11,6 +11,7 @@ import { LoadingForeverStep } from './steps/LoadingForeverStep'
 import { ClickFrenzyStep } from './steps/ClickFrenzyStep'
 import { SnowballFightStep } from './steps/SnowballFightStep'
 import { ErrorDialogStep } from './steps/ErrorDialogStep'
+import { TilePuzzleStep } from './steps/TilePuzzleStep'
 
 export enum Steps {
     PICK_USER,
@@ -22,6 +23,7 @@ export enum Steps {
     LOADING,
     Frenzy,
     Snowball,
+    PUZZLE,
     ERROR_DIALOG,
     FINAL_STEP,
 }
@@ -71,6 +73,10 @@ export const steps: IStepComponent[] = [
     {
         order: Steps.Snowball,
         component: SnowballFightStep,
+    },
+    {
+        order: Steps.PUZZLE,
+        component: TilePuzzleStep,
     },
     {
         order: Steps.ERROR_DIALOG,

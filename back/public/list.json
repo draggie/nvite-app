@@ -1,34 +1,32 @@
 [
   {
     "id": 1,
-    "name": "Halina Roszak"
+    "name": "Halina Roszak",
+    "groupId": 1
   },
   {
     "id": 2,
-    "name": "Krystyna Zawadzka"
+    "name": "Ada Razik",
+    "groupId": 2
   },
   {
     "id": 3,
-    "name": "Ada Razik"
+    "name": "Kamila Zawadzka",
+    "groupId": 3
   },
   {
     "id": 4,
-    "name": "Kamila Zawadzka"
+    "name": "Robert Zawadzki",
+    "groupId": 4
   },
   {
     "id": 5,
-    "name": "Robert Zawadzki"
+    "name": "Maciek",
+    "groupId": 3
   },
   {
     "id": 6,
-    "name": "Maciek"
-  },
-  {
-    "id": 7,
-    "name": "Patryk Hejna"
-  },
-  {
-    "id": 8,
-    "name": "Magdalena Zawadzka"
+    "name": "Magdalena Zawadzka",
+    "groupId": 4
   }
 ]

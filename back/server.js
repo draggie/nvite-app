@@ -71,13 +71,19 @@ async function main() {
     const actor = publicList.find(
       (q) => q.id === Number.parseInt(req.params.id, 10)
     );
+    if (!actor) {
+      res.status(404);
+      res.end();
+      return;
+    }
     if (mapped[actor.id]) {
       res.status(412);
       res.end();
     } else {
       const filtered = publicList
         .filter((q) => !values(mapped).some((x) => x.id === q.id))
-        .filter((q) => q.id !== actor.id);
+        .filter((q) => q.id !== actor.id)
+        .filter((q) => q.groupId !== actor.groupId);
 
       const index = randomIntFromInterval(0, filtered.length - 1);
       console.log(actor, filtered[index], index, filtered);

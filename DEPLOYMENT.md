@@ -46,9 +46,24 @@ This guide will help you deploy the nvite-app to Render.
    - **Start Command**: `npm start`
    - **Plan**: Free (or choose a paid plan)
 
-3. **Environment Variables** (optional, already set in render.yaml):
-   - `NODE_ENV`: `production`
+3. **Environment Variables** (required for persistent storage):
+   - `NODE_ENV`: `production` (already set in render.yaml)
    - `PORT`: Automatically set by Render
+   - `JSONBIN_API_KEY`: Your JSONBin.io API key (see below)
+   - `JSONBIN_BIN_ID`: Your JSONBin.io Bin ID (optional, auto-generated if not set)
+
+**Setting up JSONBin.io for persistent storage:**
+
+Since Render's free tier uses ephemeral disk storage, lottery results need to be stored externally. The app uses JSONBin.io (free tier) for this:
+
+1. Go to https://jsonbin.io and sign up (free account)
+2. Create a new "Bin" - this will give you a Bin ID
+3. Go to API Keys section and create a Master Key
+4. In Render dashboard, add these environment variables:
+   - `JSONBIN_API_KEY`: Your Master Key from JSONBin.io
+   - `JSONBIN_BIN_ID`: Your Bin ID (or leave empty to auto-generate)
+
+**Note:** If `JSONBIN_API_KEY` is not set, the app will fall back to file storage (which won't persist on Render free tier).
 
 4. **Deploy**
    - Click "Create Web Service"
@@ -105,6 +120,7 @@ The app will be available at http://localhost:3001
 ## Notes
 
 - The free tier on Render may spin down after 15 minutes of inactivity
-- For production, consider upgrading to a paid plan
-- File writes (like `mapped.json`) will persist on Render's filesystem
+- Lottery results are stored in JSONBin.io to persist across server restarts
+- If JSONBin.io is not configured, results will be lost when the server restarts
+- For production, consider upgrading to a paid plan for better reliability
 

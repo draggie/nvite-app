@@ -32,7 +32,7 @@ export const UserListStep: FC<IStep> = ({ onNext }) => {
                 onNext()
             }, 5000)
         }
-    }, [isSuccess, data])
+    }, [isSuccess, data, setTargetUser, onNext])
 
     return (
         <>

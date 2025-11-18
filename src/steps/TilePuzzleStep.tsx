@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useRef } from 'react'
 import { Card } from 'primereact/card'
 import { Button } from 'primereact/button'
 import { IStep } from '../interfaces/util'
@@ -25,12 +25,14 @@ const shuffleTiles = (): number[] => {
 export const TilePuzzleStep: React.FC<IStep> = ({ onNext }) => {
     const [tiles, setTiles] = useState<number[]>(() => shuffleTiles())
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
+    const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
     const [isSolved, setIsSolved] = useState(false)
+    const lastTouchTimeRef = useRef<number>(0)
 
     const instructions = useMemo(
         () => [
             'Na ekranie masz siatkę z rozsypanym obrazkiem prezentu.',
-            'Przeciągaj kafelki tak, aby ułożyć poprawny obraz.',
+            'Przeciągaj lub klikaj kafelki tak, aby ułożyć poprawny obraz.',
             'Kiedy wszystko zaskoczy na miejsce, odsłoni się kod do kolejnego etapu.',
         ],
         []
@@ -64,6 +66,47 @@ export const TilePuzzleStep: React.FC<IStep> = ({ onNext }) => {
         setDraggedIndex(null)
     }
 
+    const handleTouchStart = (index: number, event: React.TouchEvent) => {
+        if (isSolved) return
+        event.preventDefault()
+        
+        // Record touch time to prevent click event from firing
+        lastTouchTimeRef.current = Date.now()
+        
+        if (selectedIndex === null) {
+            // First tap: select this tile
+            setSelectedIndex(index)
+        } else if (selectedIndex === index) {
+            // Tap on same tile: deselect
+            setSelectedIndex(null)
+        } else {
+            // Second tap on different tile: swap
+            swapTiles(selectedIndex, index)
+            setSelectedIndex(null)
+        }
+    }
+
+    const handleClick = (index: number, event: React.MouseEvent) => {
+        if (isSolved) return
+        
+        // Prevent click from firing if it was triggered by a recent touch event
+        // This avoids double-swapping on mobile devices
+        if (Date.now() - lastTouchTimeRef.current < 300) {
+            event.preventDefault()
+            return
+        }
+        
+        // Fallback for click events on desktop
+        if (selectedIndex === null) {
+            setSelectedIndex(index)
+        } else if (selectedIndex === index) {
+            setSelectedIndex(null)
+        } else {
+            swapTiles(selectedIndex, index)
+            setSelectedIndex(null)
+        }
+    }
+
     const tileSize = 96
 
     return (
@@ -86,6 +129,8 @@ export const TilePuzzleStep: React.FC<IStep> = ({ onNext }) => {
                     const col = tileIndex % GRID_SIZE
                     const row = Math.floor(tileIndex / GRID_SIZE)
 
+                    const isSelected = selectedIndex === positionIndex
+                    
                     return (
                         <div
                             key={`${tileIndex}-${positionIndex}`}
@@ -93,19 +138,27 @@ export const TilePuzzleStep: React.FC<IStep> = ({ onNext }) => {
                             onDragStart={() => handleDragStart(positionIndex)}
                             onDragOver={(event) => event.preventDefault()}
                             onDrop={() => handleDrop(positionIndex)}
+                            onTouchStart={(e) => handleTouchStart(positionIndex, e)}
+                            onClick={(e) => handleClick(positionIndex, e)}
                             style={{
                                 width: tileSize,
                                 height: tileSize,
                                 borderRadius: '8px',
-                                border: '2px solid rgba(255,255,255,0.4)',
+                                border: isSelected 
+                                    ? '3px solid #FFD700' 
+                                    : '2px solid rgba(255,255,255,0.4)',
                                 backgroundImage: `url(${IMAGE_URL})`,
                                 backgroundSize: `${GRID_SIZE * 100}% ${GRID_SIZE * 100}%`,
                                 backgroundPosition: `${(col / (GRID_SIZE - 1)) * 100}% ${
                                     (row / (GRID_SIZE - 1)) * 100
                                 }%`,
-                                cursor: isSolved ? 'default' : 'grab',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.35)',
-                                transition: 'transform 0.2s ease',
+                                cursor: isSolved ? 'default' : 'pointer',
+                                boxShadow: isSelected 
+                                    ? '0 0 16px rgba(255, 215, 0, 0.8), 0 4px 12px rgba(0,0,0,0.35)' 
+                                    : '0 4px 12px rgba(0,0,0,0.35)',
+                                transition: 'transform 0.2s ease, border 0.2s ease, box-shadow 0.2s ease',
+                                transform: isSelected ? 'scale(1.05)' : 'scale(1)',
+                                touchAction: 'manipulation',
                             }}
                         />
                     )
@@ -125,7 +178,11 @@ export const TilePuzzleStep: React.FC<IStep> = ({ onNext }) => {
                 </div>
             ) : (
                 <div style={{ textAlign: 'center', opacity: 0.8 }}>
-                    Przesuwaj kafelki, aż obrazek prezentu będzie cały.
+                    {selectedIndex !== null ? (
+                        <div>Wybierz drugi kafelek, aby zamienić miejscami</div>
+                    ) : (
+                        <div>Kliknij lub przeciągnij kafelki, aż obrazek prezentu będzie cały.</div>
+                    )}
                 </div>
             )}
         </Card>

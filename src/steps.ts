@@ -12,6 +12,7 @@ import { ClickFrenzyStep } from './steps/ClickFrenzyStep'
 import { SnowballFightStep } from './steps/SnowballFightStep'
 import { ErrorDialogStep } from './steps/ErrorDialogStep'
 import { TilePuzzleStep } from './steps/TilePuzzleStep'
+import { PhoneRotationStep } from './steps/PhoneRotationStep'
 
 export enum Steps {
     PICK_USER,
@@ -24,6 +25,7 @@ export enum Steps {
     Frenzy,
     Snowball,
     PUZZLE,
+    PHONE_ROTATION,
     ERROR_DIALOG,
     FINAL_STEP,
 }
@@ -33,7 +35,8 @@ interface IStepComponent {
     component: FC<IStep>
 }
 
-export const steps: IStepComponent[] = [
+// All step components mapped to their enum values
+const allStepComponents: IStepComponent[] = [
     {
         order: Steps.PICK_USER,
         component: UserListStep,
@@ -79,6 +82,10 @@ export const steps: IStepComponent[] = [
         component: TilePuzzleStep,
     },
     {
+        order: Steps.PHONE_ROTATION,
+        component: PhoneRotationStep,
+    },
+    {
         order: Steps.ERROR_DIALOG,
         component: ErrorDialogStep,
     },
@@ -87,3 +94,51 @@ export const steps: IStepComponent[] = [
         component: FinalStep,
     },
 ]
+
+// Fisher-Yates shuffle algorithm
+const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array]
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
+    return shuffled
+}
+
+// Create randomized step sequence (first, second, and last are fixed)
+const createRandomizedSteps = (): IStepComponent[] => {
+    // Get first step (PICK_USER)
+    const firstStep = allStepComponents.find(s => s.order === Steps.PICK_USER)!
+    
+    // Get second step (SHOW_INITIAL_RESULT)
+    const secondStep = allStepComponents.find(s => s.order === Steps.SHOW_INITIAL_RESULT)!
+    
+    // Get last step (FINAL_STEP)
+    const lastStep = allStepComponents.find(s => s.order === Steps.FINAL_STEP)!
+    
+    // Get all middle steps (everything except first, second, and last)
+    const middleSteps = allStepComponents.filter(
+        s => s.order !== Steps.PICK_USER && 
+             s.order !== Steps.SHOW_INITIAL_RESULT && 
+             s.order !== Steps.FINAL_STEP
+    )
+    
+    // Shuffle the middle steps
+    const shuffledMiddleSteps = shuffleArray(middleSteps)
+    
+    // Combine: first + second + shuffled middle + last
+    return [firstStep, secondStep, ...shuffledMiddleSteps, lastStep]
+}
+
+// Generate the randomized step sequence
+export const steps: IStepComponent[] = createRandomizedSteps()
+
+// Helper function to get step by sequence index
+export const getStepByIndex = (index: number): IStepComponent | undefined => {
+    return steps[index]
+}
+
+// Helper function to get the total number of steps
+export const getTotalSteps = (): number => {
+    return steps.length
+}

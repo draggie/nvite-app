@@ -12,7 +12,6 @@ import { ClickFrenzyStep } from './steps/ClickFrenzyStep'
 import { SnowballFightStep } from './steps/SnowballFightStep'
 import { ErrorDialogStep } from './steps/ErrorDialogStep'
 import { TilePuzzleStep } from './steps/TilePuzzleStep'
-import { PhoneRotationStep } from './steps/PhoneRotationStep'
 
 export enum Steps {
     PICK_USER,
@@ -80,10 +79,6 @@ const allStepComponents: IStepComponent[] = [
     {
         order: Steps.PUZZLE,
         component: TilePuzzleStep,
-    },
-    {
-        order: Steps.PHONE_ROTATION,
-        component: PhoneRotationStep,
     },
     {
         order: Steps.ERROR_DIALOG,

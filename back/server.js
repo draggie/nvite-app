@@ -49,10 +49,26 @@ async function loadMappedData() {
     try {
         const snapshot = await db.ref('/mapped').once('value')
         const data = snapshot.val()
-        return data || {}
+        // Return array as-is, or empty array if null/undefined
+        if (Array.isArray(data)) {
+            return data
+        }
+        // If it's an object, convert to array format
+        if (data && typeof data === 'object') {
+            const maxKey = Math.max(...Object.keys(data).map(k => parseInt(k, 10)).filter(k => !isNaN(k)))
+            const arr = new Array(maxKey + 1).fill(null)
+            Object.keys(data).forEach(key => {
+                const index = parseInt(key, 10)
+                if (!isNaN(index) && data[key]) {
+                    arr[index] = data[key]
+                }
+            })
+            return arr
+        }
+        return []
     } catch (error) {
         console.error('Error loading mapped data from Firebase:', error.message)
-        return {}
+        return []
     }
 }
 
@@ -99,9 +115,7 @@ async function loadListData() {
     }
 }
 
-async function main() {
-    // Render will set process.env.PORT for you, but we use 3001 in development.
-    const PORT = process.env.PORT || 3001
+async function createApp() {
     // Create the express routes
     let app = express()
     // @ts-ignore - Express middleware works correctly at runtime
@@ -136,7 +150,13 @@ async function main() {
             const publicList = await loadListData()
             const mapped = await loadMappedData()
 
-            const filtered = publicList.filter(q => !values(mapped).some(x => x.id === q.id))
+            // Filter out people who are already targets (mapped values)
+            // Handle both array and object formats, filtering out null values
+            const mappedValues = Array.isArray(mapped) 
+                ? mapped.filter(x => x && x.id) 
+                : values(mapped).filter(x => x && x.id)
+            
+            const filtered = publicList.filter(q => !mappedValues.some(x => x.id === q.id))
             res.status(200)
             res.json(filtered)
         } catch (error) {
@@ -149,7 +169,7 @@ async function main() {
         try {
             const publicList = await loadListData()
             console.log('Public list:', publicList)
-            const mapped = await loadMappedData()
+            let mapped = await loadMappedData()
             console.log('Mapped:', mapped)
 
             const actor = publicList.find(q => q.id === Number.parseInt(req.params.id, 10))
@@ -158,32 +178,54 @@ async function main() {
                 res.end()
                 return
             }
-            if (mapped[actor.id]) {
+            
+            // Check if actor already has a mapping (handle array format)
+            // For arrays, check if the index exists and is not null
+            const existingMapping = Array.isArray(mapped) 
+                ? (mapped[actor.id] || null)
+                : mapped[actor.id]
+            
+            if (existingMapping) {
                 res.status(412).json({
                     error: 'Lottery already completed for this user',
-                    result: mapped[actor.id],
+                    result: existingMapping,
                 })
                 return
             }
 
+            // Get all mapped targets, filtering out null values
+            const mappedValues = Array.isArray(mapped) 
+                ? mapped.filter(x => x && x.id) 
+                : values(mapped).filter(x => x && x.id)
+
             const filtered = publicList
-                .filter(q => !values(mapped).some(x => x.id === q.id))
+                .filter(q => !mappedValues.some(x => x.id === q.id))
                 .filter(q => q.id !== actor.id)
                 .filter(q => q.groupId !== actor.groupId)
+
+            if (filtered.length === 0) {
+                res.status(400).json({ error: 'No available targets' })
+                return
+            }
 
             const index = randomIntFromInterval(0, filtered.length - 1)
             console.log(actor, filtered[index], index, filtered)
             const target = filtered[index]
-            if (target) {
-                mapped[actor.id] = filtered[index]
-                await saveMappedData(mapped)
-                res.status(200)
-                res.json(mapped[actor.id])
-                res.end()
-            } else {
-                res.status(400)
-                res.end()
+            
+            // Ensure mapped is an array and has enough length
+            if (!Array.isArray(mapped)) {
+                mapped = []
             }
+            // Extend array if needed to accommodate the actor id
+            while (mapped.length <= actor.id) {
+                mapped.push(null)
+            }
+            
+            mapped[actor.id] = target
+            await saveMappedData(mapped)
+            res.status(200)
+            res.json(mapped[actor.id])
+            res.end()
         } catch (error) {
             console.error('Error in /lottery/:id:', error)
             res.status(500).json({ error: 'Internal server error', details: error.message })
@@ -222,6 +264,14 @@ async function main() {
         }
     })
 
+    return app
+}
+
+async function main() {
+    // Render will set process.env.PORT for you, but we use 3001 in development.
+    const PORT = process.env.PORT || 3001
+    const app = await createApp()
+    
     // Create the HTTP server.
     let server = http.createServer(app)
     server.listen(PORT, function () {
@@ -229,4 +279,9 @@ async function main() {
     })
 }
 
-main()
+// Export app for testing
+if (require.main !== module) {
+    module.exports = { createApp, loadListData, loadMappedData, saveMappedData }
+} else {
+    main()
+}

@@ -4,7 +4,8 @@
   "description": "A sample application for Azure using the Express framework",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "repository": {
     "type": "git",
@@ -24,5 +25,13 @@
     "firebase-admin": "^13.6.0",
     "lodash": "^4.17.21",
     "request": "^2.88.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": ["**/*.test.js"]
   }
 }
